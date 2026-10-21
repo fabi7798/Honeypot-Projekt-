@@ -1,8 +1,10 @@
 DVWA Website github link: https://github.com/digininja/DVWA/tree/master
 
+Installation kann man schritt für schritt nach machen ist auf dem Git von denen drauf
+
 Schwachstellen stehen im Ordner vulnerablilities drinne:
 
-Gruppen aufteilung:
+Gruppen aufteilung: (es kann auch mehr Gruppen geben aber sonst irgendwie 2er Gruppen und eine 3er)
 	1 Gruppe: SQL-Injektion
 	2 Gruppe: XSS
 	3 Gruppe: Brute Force und Session Angriffe
