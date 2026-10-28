@@ -1,0 +1,39 @@
+# Datenbanken und persistente Daten
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Sicherungen
+backups/
+*.tar
+*.bak
+
+# Protokolle und Laufzeitdaten
+logs/
+*.log
+
+# Zugangsdaten und lokale Konfiguration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Python-Dateien
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Lokale Entwicklungsumgebung
+.vscode/
+.idea/
+.DS_Store
+
+# Temporäre Dateien
+tmp/
+temp/

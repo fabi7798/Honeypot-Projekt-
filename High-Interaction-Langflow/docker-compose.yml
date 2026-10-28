@@ -1,0 +1,38 @@
+services:
+  langflow:
+    image: langflowai/langflow:1.8.1
+    container_name: honeypot-langflow
+    volumes:
+    - langflow_data:/app/data
+    security_opt:
+    - no-new-privileges:true
+    expose:
+    - '7860'
+    restart: unless-stopped
+    networks:
+    - honeypot_internal
+    environment:
+      LANGFLOW_DATABASE_URL: sqlite+aiosqlite:////app/data/langflow.db
+  nginx:
+    image: nginx:alpine
+    container_name: honeypot-nginx
+    ports:
+    - 127.0.0.1:8080:80
+    volumes:
+    - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    - ./nginx/honeypot-log.conf:/etc/nginx/conf.d/00-honeypot-log.conf:ro
+    - ./logs/nginx:/var/log/nginx
+    depends_on:
+    - langflow
+    restart: unless-stopped
+    networks:
+    - honeypot_frontend
+    - honeypot_internal
+networks:
+  honeypot_internal:
+    driver: bridge
+    internal: true
+  honeypot_frontend:
+    driver: bridge
+volumes:
+  langflow_data: {}
