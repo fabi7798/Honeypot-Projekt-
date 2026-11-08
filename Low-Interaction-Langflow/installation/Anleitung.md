@@ -267,48 +267,9 @@ df -h
 
 ---
 
-## 11. Sicherheits-Checkliste
 
-- [ ] Honeypot läuft auf eigenem, isoliertem Host oder in eigenem VLAN
-- [ ] Keine echten Zugangsdaten / Schlüssel auf dem Host
-- [ ] Image gebaut mit `docker build --pull`
-- [ ] Datenordner gehört UID `10001`
-- [ ] Eigenes Netz `hpnet` mit iptables-Egress-Sperre, Regel dauerhaft gespeichert
-- [ ] Container mit `--read-only`, `--cap-drop ALL`, `no-new-privileges`, Ressourcenlimits gestartet
-- [ ] Kein `--privileged`, kein Docker-Socket-Mount, kein Host-Netzwerk
-- [ ] Egress-Test (Abschnitt 7) schlägt fehl, wie erwartet
-- [ ] Logging getestet (Zeilen in `events.jsonl`)
-- [ ] Logrotation eingerichtet, Plattenplatz wird überwacht
-- [ ] SSH-Zugang zum Host nur von eigener IP
-- [ ] `data/` steht in `.gitignore` und `.dockerignore`
 
----
-
-## 12. Fehlersuche
-
-| Problem | Ursache / Lösung |
-| --- | --- |
-| `Permission denied` bei `/data` | Datenordner gehört nicht UID 10001: `sudo chown 10001 ~/honeypot-data` |
-| Container startet nicht | `docker logs lf-hp` ansehen; Port 7860 evtl. schon belegt (`ss -tlnp \| grep 7860`) |
-| Keine `events.jsonl` | Noch kein Request angekommen (Datei entsteht beim ersten Request) oder falscher Ordner gemountet |
-| Von außen nicht erreichbar | Firewall / Portweiterleitung am Router prüfen, `-p` Mapping prüfen |
-| Egress-Test geht durch | iptables-Regel fehlt (nach Reboot weg?): `sudo iptables -L DOCKER-USER -n`, Regel erneut setzen, speichern |
-| Quell-IP im Log ist immer die gleiche (z. B. 172.x) | Docker-NAT/Proxy davor; mit eigenem Reverse Proxy und `--trust-proxy` arbeiten (siehe unten) |
-
-### Hinter einem Reverse Proxy
-
-Nur wenn ein eigener Proxy (z. B. nginx, Caddy) vor dem Honeypot steht und `X-Forwarded-For` selbst setzt:
-Dockerfile-Aufruf um `--trust-proxy` ergänzen, z. B. beim Start am Ende des `docker run`:
-
-```bash
-langflow-honeypot --trust-proxy
-```
-
-Ohne eigenen Proxy `--trust-proxy` **nicht** setzen, sonst kann ein Angreifer die Quell-IP im Log fälschen.
-
----
-
-## 13. Aufräumen / Deinstallieren
+## 11. Aufräumen / Deinstallieren
 
 ```bash
 docker stop lf-hp && docker rm lf-hp
