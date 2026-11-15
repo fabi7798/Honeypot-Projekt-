@@ -124,3 +124,44 @@ und isolierten Laborumgebung vorgesehen.
 
 Die Compose-Konfiguration wurde syntaktisch geprüft.
 Ein vollständiger Neuinstallationstest steht noch aus.
+
+## Automatische Logging- und Detection-Pipeline
+
+Die Pipeline verarbeitet neue Nginx-Logeinträge und speichert
+Requests und Alerts inkrementell in SQLite.
+
+### Voraussetzungen
+
+- Python 3 mit SQLite-Unterstützung
+- Zugriff auf die Nginx-Access-Logs
+- Schreibrechte für die Detection-Datenbank
+
+### Einmalige Auswertung
+
+Im Verzeichnis High-Interaction-Langflow ausführen:
+
+    python3 scripts/honeypot_pipeline.py --once
+
+### Kontinuierliche Überwachung
+
+    python3 -u scripts/honeypot_pipeline.py
+
+Standardintervall: 2 Sekunden.
+Beenden mit Ctrl+C.
+
+### Speicherorte
+
+Nginx-Log: logs/nginx/access.log
+Detection-Datenbank: logs/pipeline/detection.sqlite3
+
+### Einschränkungen
+
+- Docker Compose startet die Pipeline noch nicht automatisch.
+- Ein automatischer Systemstart ist noch einzurichten.
+- Rename-basierte Log-Rotation wurde lokal getestet.
+- copytruncate wird nicht unterstützt.
+- HTTP-Alerts beweisen keine erfolgreiche CVE-Ausnutzung.
+- Das Deployment auf der Uni-VM steht noch aus.
+
+Weitere Details:
+docs/automatic-detection-pipeline.md
