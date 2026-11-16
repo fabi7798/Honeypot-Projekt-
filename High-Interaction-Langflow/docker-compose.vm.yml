@@ -1,0 +1,60 @@
+services:
+  langflow:
+    image: langflowai/langflow:1.8.1
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    volumes:
+      - langflow_data:/app/data
+    environment:
+      LANGFLOW_DATABASE_URL: sqlite+aiosqlite:////app/data/langflow.db
+      LANGFLOW_ALEMBIC_LOG_TO_STDOUT: "true"
+      DO_NOT_TRACK: "true"
+      LANGFLOW_CORS_ORIGINS: "http://localhost,http://127.0.0.1,http://localhost:8080,http://127.0.0.1:8080"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 2400m
+    cpus: 1.5
+    pids_limit: 256
+    restart: "no"
+    networks:
+      - honeypot_internal
+
+  nginx:
+    image: nginx:alpine
+    read_only: true
+    tmpfs:
+      - /run:size=16m,mode=0755
+      - /var/cache/nginx:size=32m,mode=0755
+      - /tmp:size=16m,mode=1777
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/honeypot-log.conf:/etc/nginx/conf.d/00-honeypot-log.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - langflow
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 64
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+    networks:
+      - honeypot_internal
+
+networks:
+  honeypot_internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  langflow_data:
