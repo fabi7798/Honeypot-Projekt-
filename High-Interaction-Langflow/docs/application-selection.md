@@ -1,17 +1,38 @@
-# Auswahl der verwundbaren Web-Anwendung
+# Anwendungsauswahl – High-Interaction Honeypot
 
-## Anwendung
-DVWA – Damn Vulnerable Web Application
+## Gewählte Anwendung
 
-## Zweck
-DVWA wird als verwundbare Web-Anwendung für das Honeypot-Experiment verwendet.
+Langflow 1.8.1
+
+## Projektziel
+
+Aufbau und Untersuchung eines High-Interaction-Honeypots
+auf Basis einer realen Webanwendung.
 
 ## Gründe für die Auswahl
-- bekannte und dokumentierte Web-Schwachstellen
-- einfache Bereitstellung mit Docker
-- reproduzierbare Angriffe
-- geeignet für Logging und spätere Analyse
-- für eine kontrollierte Laborumgebung geeignet
 
-## Sicherheitsprinzip
-Die Anwendung wird zunächst ausschließlich lokal betrieben und nicht öffentlich aus dem Internet erreichbar gemacht.
+- Reale Webanwendung mit HTTP-API
+- Reproduzierbare, kontrollierte Sicherheitsexperimente
+- Untersuchung der Schwachstelle CVE-2026-33017
+- Betrieb mit Docker Compose und Nginx
+- Erfassung und Auswertung von HTTP-Anfragen
+
+## Nachgewiesene Ergebnisse
+
+In der lokalen Testumgebung wurden normale HTTP-Anfragen
+und ein kontrollierter CVE-Test durchgeführt.
+
+Der CVE-Test bestätigte eine serverseitige Python-Codeausführung
+anhand eines eindeutigen lokalen Markers.
+
+Auf der Hochschul-VM wurden die Anwendung, das HTTP-Logging,
+die regelbasierte Detection Pipeline und die Container-Isolation
+separat überprüft.
+
+## Sicherheitsgrenzen
+
+Die verwundbare Anwendung wird ausschließlich in einer
+autorisierten, isolierten Testumgebung betrieben.
+
+Eine öffentliche Freigabe erfolgt erst nach Genehmigung
+des gemeinsamen Sicherheitskonzepts.

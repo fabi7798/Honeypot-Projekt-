@@ -1,126 +1,136 @@
-# High-Interaction-Honeypot mit Langflow
+# High-Interaction-Honeypot – Langflow 1.8.1
 
 ## Projekt
 
 Hochschule Bonn-Rhein-Sieg
 Bachelor Cyber Security & Privacy
 Wintersemester 2026/27
-Modul: Projekt (Honeypots)
+Projekt Honeypots – High-Interaction-Teil
 
 ## Ziel
 
 Aufbau und Untersuchung eines High-Interaction-Honeypots
-auf Basis von Langflow 1.8.1.
+auf Basis der realen Webanwendung Langflow 1.8.1.
 
-Untersucht wird die Sicherheitslücke CVE-2026-33017
-in einer lokalen, kontrollierten Testumgebung.
+Im Mittelpunkt stehen die kontrollierte Untersuchung
+von CVE-2026-33017, das HTTP-Logging und die
+regelbasierte Erkennung auffälliger Anfragen.
 
 ## Architektur
 
-- Kali Linux als Testumgebung
+- Langflow 1.8.1 als Webanwendung
 - Docker Compose zur Containerverwaltung
-- Langflow 1.8.1 als verwundbare Anwendung
 - Nginx als Reverse Proxy
-- HTTP-Logging mit Request-ID
-- bpftrace zur Überwachung von Prozessstarts
-- Persistente SQLite-Datenbank
+- HTTP-Logging mit eindeutiger Request-ID
+- SQLite für Anwendungsdaten
+- Separate SQLite-Datenbank für Detection
+- Python-basierte Detection Pipeline
 
-## Netzwerk
+## Testumgebungen
 
-Langflow befindet sich ausschließlich im internen
-Docker-Netzwerk.
+### Lokale Testumgebung – Kali Linux
 
-Nginx ist mit dem internen Netzwerk und einem separaten
-Frontend-Netzwerk verbunden.
+Die lokalen Experimente wurden mit Docker Compose
+und Nginx durchgeführt.
 
-Der lokale Zugriff erfolgt über:
+Konfiguration: docker-compose.yml
 
-http://127.0.0.1:8080
+Lokaler Zugriff: http://127.0.0.1:8080
 
-## Experimente
+### Hochschul-VM
 
-### Baseline
+Die VM verwendet eine separat gehärtete Konfiguration:
 
-Eine normale HTTP-Anfrage wurde an Langflow gesendet.
+docker-compose.vm.yml
+
+- Internes Docker-Netzwerk
+- Keine veröffentlichten Container-Ports
+- ReadOnlyRootFS für Langflow und Nginx
+- AppArmor und NoNewPrivileges
+- Eingeschränkte Linux-Capabilities
+- CPU-, RAM- und Prozesslimits
+- Deaktivierte Telemetrie
+- Eingeschränkte CORS-Konfiguration
+
+Die Detection Pipeline wurde auf der VM als
+systemd-Dienst getestet. Die Einrichtung dieses
+Dienstes und der Logrotation erfolgt separat
+auf dem Host und ist nicht Bestandteil der
+Docker-Compose-Datei.
+
+Ein automatischer Neustart der Honeypot-Dienste
+ist derzeit nicht aktiviert.
+
+## Nachgewiesene Ergebnisse
+
+### HTTP-Logging
+
+- Erfolgreiche HTTP-Anfragen mit Status 200
+- Request-ID in HTTP-Antwort und Nginx-Log
+- Automatische Verarbeitung neuer Logeinträge
+
+### Detection Pipeline
+
+- Speicherung von HTTP-Requests in SQLite
+- Regelbasierte Erkennung von HTTP-Fehlern
+- Erkennung wiederholter Clientfehler
+- Erfolgreicher Test der Nginx-Logrotation
+
+Die Alerts sind Hinweise auf Auffälligkeiten,
+keine Nachweise erfolgreicher Angriffe.
+
+### Kontrollierter CVE-Test
+
+In der isolierten lokalen Testumgebung wurde
+CVE-2026-33017 untersucht.
 
 Ergebnis:
-- HTTP 200
-- Job-ID erhalten
-- Request-ID im Nginx-Log dokumentiert
-
-### Kontrollierter Sicherheitstest
-
-CVE-2026-33017 wurde in einer isolierten
-Testumgebung untersucht.
-
-Ergebnis:
-- HTTP 200
-- Job-ID erhalten
+- HTTP 200 und Job-ID
 - Serverseitige Python-Codeausführung durch
   einen eindeutigen lokalen Marker nachgewiesen
 
-## Ergebnisse
+Der CVE-Test wurde nicht auf der Hochschul-VM
+wiederholt.
 
-Die normalen und die kontrolliert manipulierten
-HTTP-Anfragen wurden im Nginx Access Log protokolliert.
+## Grenzen
 
-Beide Anfragen lieferten HTTP 200.
-
-Daher reicht der HTTP-Statuscode allein nicht aus,
-um einen erfolgreichen Angriff zu erkennen.
+- Ein HTTP-Status 200 unterscheidet nicht
+  zuverlässig zwischen normalen und
+  manipulierten Anfragen.
+- Die Detection Pipeline erkennt keine
+  beliebige erfolgreiche Codeausführung.
+- bpftrace wurde separat überprüft.
+- Eine automatische Zuordnung von Request-IDs
+  zu internen Prozessereignissen besteht nicht.
+- Die VM-Konfiguration wurde intern getestet,
+  aber nicht für öffentliche Zugriffe freigegeben.
 
 ## Dokumentation
 
+- docs/application-selection.md
 - docs/high-interaction-summary.md
 - docs/experiment-comparison.md
-- docs/baseline-experiment.md
-- docs/logging-plan.md
+- docs/automatic-detection-pipeline.md
+- docs/VM-Security-Audit-2026-11-16.md
+- experiments/cve-2026-33017/README.md
 
 ## Sicherheit
 
-Dieses Projekt dient ausschließlich wissenschaftlichen
-Testzwecken in einer lokalen Laborumgebung.
+Langflow 1.8.1 wird hier bewusst als verwundbare
+Anwendung für autorisierte Forschung eingesetzt.
 
-Die verwundbare Anwendung darf nicht ungeschützt
-im öffentlichen Internet betrieben werden.
+Keine öffentliche Freigabe vor der Genehmigung
+des gemeinsamen Sicherheitskonzepts.
 
-Datenbanken, Zugangsdaten, Backups und lokale Logs
-werden nicht im Git-Repository gespeichert.
+Zugangsdaten, private Schlüssel, Datenbanken,
+Payloads und Laufzeitlogs gehören nicht in GitHub.
 
 ## Status
 
-Technischer Aufbau: abgeschlossen
-HTTP-Logging: funktionsfähig
-Kontrollierter Exploit-Nachweis: erfolgreich
-Auswertung: vorläufig abgeschlossen
-Gruppenintegration und Abschlussdokumentation: ausstehend
+High-Interaction-Implementierung, grundlegende
+VM-Sicherheitsprüfungen und interne Tests
+erfolgreich abgeschlossen.
 
-
-## Installation und Start
-
-### Voraussetzungen
-- Docker Engine
-- Docker Compose Plugin
-- Linux-Testumgebung empfohlen
-
-### Start
-
-1. Repository klonen.
-2. In das Verzeichnis High-Interaction-Langflow wechseln.
-3. Container mit `docker compose up -d` starten.
-4. Anwendung unter http://127.0.0.1:8080 aufrufen.
-5. Containerstatus mit `docker compose ps` prüfen.
-
-### Persistente Daten
-
-Die SQLite-Datenbank wird in einem Docker-Volume gespeichert.
-Die ursprüngliche lokale Versuchsdatenbank wird nicht mitgeliefert.
-
-### Sicherheitshinweise
-
-Langflow 1.8.1 ist absichtlich verwundbar.
-Der Betrieb ist ausschließlich in einer autorisierten
-und isolierten Laborumgebung vorgesehen.
-
-Die Compose-Konfiguration wurde syntaktisch geprüft.
-Ein vollständiger Neuinstallationstest steht noch aus.
+Die gemeinsame Integration, abschließende
+Gruppenfreigabe und öffentliche Bereitstellung
+sind davon getrennte Aufgaben.

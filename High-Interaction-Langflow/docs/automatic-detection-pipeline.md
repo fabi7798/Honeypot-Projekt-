@@ -1,6 +1,6 @@
 # Automatische HTTP- und Verhaltenserkennung (High-Interaction / Langflow)
 
-**Status:** Lokal getesteter Prototyp; kein produktiver Betrieb auf der Hochschul-VM.
+**Status:** Lokal und auf der Hochschul-VM erfolgreich in einer isolierten Testumgebung überprüft. Keine öffentliche Freigabe.
 
 ## Zweck und Abgrenzung
 
@@ -41,7 +41,7 @@ python3 scripts/honeypot_pipeline.py --once \
 python3 -u scripts/honeypot_pipeline.py --interval 5
 ```
 
-**Standardpfade:** `logs/nginx/access.log` und `logs/pipeline/detection.sqlite3`, jeweils relativ zum Projektverzeichnis. Der kontinuierliche Betrieb läuft nur, solange der Prozess aktiv ist; ein Dienst zur automatischen Wiederaufnahme nach Neustarts ist noch nicht eingerichtet.
+**Standardpfade:** `logs/nginx/access.log` und `logs/pipeline/detection.sqlite3`, jeweils relativ zum Projektverzeichnis. Auf der Hochschul-VM läuft die Pipeline als systemd-Dienst `honeypot-monitor.service` mit eingeschränkten Rechten. Der Dienst wurde manuell gestartet und ist aktiv. Der automatische Start nach einem VM-Neustart ist deaktiviert.
 
 ## Implementierte Regeln
 
@@ -61,24 +61,38 @@ Unterstützt werden vorhandene, nicht komprimierte, fortlaufend nummerierte Umbe
 
 **Nicht vollständig abgedeckt:** `copytruncate`, komprimierte/gelöschte rotierte Dateien, vollständige Wiederherstellung bei fehlenden Logsegmenten, Inode-Wiederverwendung, dauerhafter Dienstbetrieb und Betriebsüberwachung. Bei vorzeitig entfernten rotierten Dateien kann Datenverlust nicht ausgeschlossen werden. Für einen Dauerbetrieb ist daher eine abgestimmte Log-Retention erforderlich.
 
-## Lokale Tests am 15.11.2026
+## Verifizierte Ergebnisse
 
-| Test | Beobachtung |
-|---|---|
-| Erstverarbeitung des lokalen Testlogs | `737 requests`, `42 HTTP alerts`, `5 behavior alerts` |
-| Zweiter Lauf ohne neue Zeilen | `0 requests`, `0 HTTP alerts`, `0 behavior alerts` |
-| Umbenennung in `.1` und Neuanlage des Logs | Zwei neue Requests, ein HTTP-Alert; beide Request-IDs in SQLite nachgewiesen |
-| Erneuter Lauf nach der Rotation | Keine neuen Einträge oder Alarme |
-| Truncation eines separaten Testlogs | `PIPELINE STOPPED: Truncation detected` |
+### Lokale Testumgebung
 
-Die Testdatei enthält historische lokale Logs **und synthetische Tests**. Alarmzahlen sind keine Zählung bestätigter Angriffe. Weitere Abnahme- und Integrationstests mit der GitHub-Version sowie ein frischer Deployment-Test stehen aus.
+- HTTP-Requests wurden erfolgreich verarbeitet.
+- HTTP- und Verhaltensregeln erzeugten strukturierte Alerts.
+- Wiederholte Verarbeitung unveränderter Logs erzeugte keine Duplikate.
+- Rotation durch Umbenennung wurde erfolgreich getestet.
+
+### Hochschul-VM
+
+- Langflow 1.8.1 und Nginx liefen isoliert in Docker.
+- HTTP 200 und X-Request-ID wurden nachgewiesen.
+- Die Detection Pipeline übernahm Requests automatisch in SQLite.
+- Drei HTTP-404-Testrequests erzeugten einen Behavior Alert.
+- Nginx Log Rotation wurde erfolgreich überprüft.
+- Der systemd-Monitor war aktiv.
+- Keine veröffentlichten Container-Ports.
+
+### Aussagegrenze
+
+Die Detection basiert auf HTTP-Statuscodes und einfachen
+Verhaltensregeln. Ein Alert beweist keinen erfolgreichen Angriff.
+Die CVE-Ausführung wurde in einem separaten lokalen Experiment
+nachgewiesen, nicht automatisch durch diese Pipeline erkannt.
 
 ## Sicherheitsgrenzen und offene Arbeiten
 
 - Eine erfolgreiche Ausnutzung von **CVE-2026-33017** kann bei HTTP 200 auftreten; die vorhandenen HTTP- und Verhaltensregeln belegen oder erkennen diesen Erfolg nicht zuverlässig. Für einen solchen Nachweis sind unabhängig erfasste Ausführungs-/Systemereignisse und eine überprüfbare Korrelation erforderlich.
 - Keine Exponierung einer verwundbaren Langflow-Instanz über eine öffentliche Schnittstelle ohne abgestimmtes Sicherheitskonzept und Freigabe des Teams; zunächst nur lokal gebundener Zugang/SSH-Tunnel.
 - Die Hochschul-VM ist ein gemeinsam genutztes System; Speicher, CPU, Ports, Log-Retention und Zugriffsrechte müssen mit den zuständigen Teammitgliedern abgestimmt werden.
-- Vor einem Merge: Code-Review, saubere Testumgebung, Prüfung von `.gitignore`, kein Commit von Logdateien, Exploit-Artefakten, SQLite-Datenbanken oder Zugangsdaten.
+- Bei Änderungen: Code-Review und Prüfung von `.gitignore`; keine Logdateien, Exploit-Artefakte, SQLite-Datenbanken oder Zugangsdaten veröffentlichen.
 
 ## Einordnung für die Gruppenarbeit
 
