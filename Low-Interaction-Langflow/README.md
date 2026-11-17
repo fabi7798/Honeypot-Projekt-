@@ -5,10 +5,10 @@ Einzelne Python-Datei, nur Standardbibliothek. Führt **nie** Code aus und start
 ## Start
 
 ```bash
-python3 honeypot.py --port 7860 --data-dir ./data
+python3 honeypot.py --port 7861 --data-dir ./data
 # oder
-docker build -t langflow-honeypot .
-docker run -d --name lf-hp -p 7860:7860 -v $PWD/data:/data langflow-honeypot
+docker build -t langflow-honeypot -f docker/Dockerfile .
+docker run -d --name lf-hp -p 7861:7861 -v $PWD/data:/data langflow-honeypot
 ```
 
 Optionen: `--host`, `--port`, `--data-dir`, `--trust-proxy` (X-Forwarded-For nur hinter eigenem Reverse Proxy), `--quiet`.
