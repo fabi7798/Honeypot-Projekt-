@@ -7,7 +7,7 @@ Einzelne Python-Datei, nur Standardbibliothek. Führt **nie** Code aus und start
 ```bash
 python3 honeypot.py --port 7861 --data-dir ./data
 # oder
-docker build -t langflow-honeypot -f docker/Dockerfile .
+docker build -t langflow-honeypot -f Docker/Dockerfile .
 docker run -d --name lf-hp -p 7861:7861 -v $PWD/data:/data langflow-honeypot
 ```
 
