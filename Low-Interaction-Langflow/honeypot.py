@@ -251,7 +251,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     ap = argparse.ArgumentParser(description="Langflow 1.8.1 Low-Interaction-Honeypot")
     ap.add_argument("--host", default="0.0.0.0")
-    ap.add_argument("--port", type=int, default=7860)  # Langflow-Standardport
+    ap.add_argument("--port", type=int, default=7861)  # Langflow-Standardport
     ap.add_argument("--data-dir", default="./data")
     ap.add_argument("--trust-proxy", action="store_true",
                     help="X-Forwarded-For als Quell-IP verwenden (nur hinter eigenem Proxy)")
